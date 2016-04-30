@@ -32,7 +32,19 @@ app.get('/', function(request, response) {
 
 // GET /todos
 app.get('/todos', function(request, response) {
-	response.json(todos);
+	const queryParams = request.query;	
+	var filteredTodos = todos;	
+
+	if (queryParams.hasOwnProperty('completed')) {
+		if (queryParams.completed === 'true') {
+			filteredTodos = _.where(filteredTodos, {completed: true});
+		}
+		else if (queryParams.completed === 'false') {
+			filteredTodos = _.where(filteredTodos, {completed: false});
+		}
+	}
+
+	response.json(filteredTodos);
 });
 
 // GET /todos/:id
