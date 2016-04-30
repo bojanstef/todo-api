@@ -5,23 +5,7 @@ const _ = require('underscore');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-var todos = []; /*[{
-	id: 1,
-	description: 'Win at life',
-	completed: false
-}, {
-	id: 2,
-	description: 'Create Localeyes',
-	completed: false
-}, {
-	id: 3,
-	description: 'Study for midterm',
-	completed: true
-}, {
-	id: 4,
-	description: 'New description',
-	completed: false
-}];*/
+var todos = []; 
 var todoNextId = 1;
 
 app.use(bodyParser.json());
@@ -30,7 +14,7 @@ app.get('/', function(request, response) {
 	response.send('Todo: API Root');
 });
 
-// GET /todos
+// GET /todos - ?completed=true & q=something (things in the description field)
 app.get('/todos', function(request, response) {
 	const queryParams = request.query;	
 	var filteredTodos = todos;	
@@ -42,6 +26,12 @@ app.get('/todos', function(request, response) {
 		else if (queryParams.completed === 'false') {
 			filteredTodos = _.where(filteredTodos, {completed: false});
 		}
+	}
+
+	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+		filteredTodos = _.filter(filteredTodos, function(query) {
+			return query.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+		});
 	}
 
 	response.json(filteredTodos);
