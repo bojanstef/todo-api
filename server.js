@@ -43,14 +43,25 @@ app.get('/todos', function(request, response) {
 // GET /todos/:id
 app.get('/todos/:id', function(request, response) {
 	const todoId = parseInt(request.params.id, 10); // 2nd argument is the Base	
-	const matchedTodo = _.findWhere(todos, {
-		id: todoId
+
+	db.todo.findById(todoId).then(function(todo) { // first function is success
+		if (!!todo) { // !! in case it's null it will flip to false
+			response.json(todo.toJSON());
+		} else {
+			response.status(404).send();
+		}
+	}, function(error) { // second function is error
+		response.status(500).send();
 	});
-	if (matchedTodo) {
-		response.json(matchedTodo);
-	} else {
-		response.status(400).send();
-	}
+
+	// const matchedTodo = _.findWhere(todos, {
+	// 	id: todoId
+	// });
+	// if (matchedTodo) {
+	// 	response.json(matchedTodo);
+	// } else {
+	// 	response.status(400).send();
+	// }
 });
 
 // POST /todos 
