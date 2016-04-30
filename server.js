@@ -16,28 +16,47 @@ app.get('/', function(request, response) {
 
 // GET /todos - ?completed=true & q=something (things in the description field)
 app.get('/todos', function(request, response) {
-	const queryParams = request.query;
-	var filteredTodos = todos;
+	const query = request.query;
+	var where = {};
 
-	if (queryParams.hasOwnProperty('completed')) {
-		if (queryParams.completed === 'true') {
-			filteredTodos = _.where(filteredTodos, {
-				completed: true
-			});
-		} else if (queryParams.completed === 'false') {
-			filteredTodos = _.where(filteredTodos, {
-				completed: false
-			});
-		}
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
 	}
 
-	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-		filteredTodos = _.filter(filteredTodos, function(query) {
-			return query.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-		});
+	if (query.hasOwnProperty('q') && query.q.length > 0) {
+		where.description = {
+			$like: '%' + query.q + '%'
+		};
 	}
 
-	response.json(filteredTodos);
+	db.todo.findAll({where: where}).then(function(todos) {
+		response.json(todos);
+	}, function(e) {
+		response.status(500).send();
+	});
+
+	// var filteredTodos = todos;
+	// if (queryParams.hasOwnProperty('completed')) {
+	// 	if (queryParams.completed === 'true') {
+	// 		filteredTodos = _.where(filteredTodos, {
+	// 			completed: true
+	// 		});
+	// 	} else if (queryParams.completed === 'false') {
+	// 		filteredTodos = _.where(filteredTodos, {
+	// 			completed: false
+	// 		});
+	// 	}
+	// }
+
+	// if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+	// 	filteredTodos = _.filter(filteredTodos, function(query) {
+	// 		return query.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+	// 	});
+	// }
+
+	// response.json(filteredTodos);
 });
 
 // GET /todos/:id
