@@ -68,7 +68,7 @@ app.post('/todos', function(req, res) {
 // DELETE /todos/:id
 app.delete('/todos/:id', function(req, res) {
 	const todoId = parseInt(req.params.id, 10); // 2nd argument is the Base	
-	const matchedTodo = _.findWhere(todos, {id: todoId});	
+	const matchedTodo = _.findWhere(todos, {id: todoId});
 
 	if (!matchedTodo) {
 		res.status(404).json({"error": "No todo with id " + todoId});
@@ -77,6 +77,38 @@ app.delete('/todos/:id', function(req, res) {
 		todos = _.without(todos, matchedTodo); // updates todos array with deleted item
 		res.json(matchedTodo);
 	}
+
+});
+
+// PUT /todos/:id
+app.put('/todos/:id', function(req, res) {
+	const todoId = parseInt(req.params.id, 10); // 2nd argument is the Base	
+	const matchedTodo = _.findWhere(todos, {id: todoId});
+	var body = _.pick(req.body, 'description', 'completed'); // Use only desc and completed fields.
+	var validAttributes = {};
+
+	if (!matchedTodo) {
+		return res.status(404).send();
+	}
+
+	// Validation for completed property
+	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+		validAttributes.completed = body.completed;
+	}
+	else if (body.hasOwnProperty('completed')) { // is not boolean
+		return res.status(400).send();
+	}
+
+	// Validation for description property
+	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+		validAttributes.description = body.description;
+	}
+	else if (body.hasOwnProperty('description')) {
+		return res.status(400).send();	
+	}
+	
+	_.extend(matchedTodo, validAttributes);
+	res.json(matchedTodo);
 
 });
 
